@@ -9,10 +9,10 @@ When the 'test_indoor_area.py' file is executed:
 the point cloud data for the time interval specified in the configuration.yaml file will appear on the screen.
 ![Screenshot 2023-10-01 212921](https://github.com/Heisenberk-Karabay/Hacettepe-Indoor-Space-Estimation/assets/85685449/7f2e188b-6934-4947-86c6-ffff103a152b)
 
-After this screen the dbscan algorithm runs, the data will be displayed on the screen.
+After this screen, the dbscan algorithm runs and the data will be displayed on the screen.
 ![Screenshot 2023-10-01 213000](https://github.com/Heisenberk-Karabay/Hacettepe-Indoor-Space-Estimation/assets/85685449/8df1e3fa-3af9-414c-aef9-267870bd62e4)
 
-After this screen, the dots consisting of the most repetitive pattern will appear on the screen.
+After this screen, the points consisting of the most repeated label will appear on the screen.
 ![Screenshot 2023-10-01 213104](https://github.com/Heisenberk-Karabay/Hacettepe-Indoor-Space-Estimation/assets/85685449/3cfcce3c-02f3-4ba2-b8b6-50f973e7a8f5)
 
 Finally, histograms of x y z data will be recorded and the calculated area value will be written to the console.
