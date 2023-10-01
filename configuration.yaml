@@ -1,0 +1,16 @@
+# Configuration file to process an indoor space
+---
+  input_points: data.txt 
+  rowskip: 51000000
+  log: True # helps identifying the rowskip  
+  stepsize: 1000000
+  time_start: 1665316938.5186303
+  time_end: 1665316972.0186303
+  visualize: True
+  writeout: True
+  out_file_name: output.pcd
+  dbscan:
+    down_sample_ratio: 0.05
+    eps: 0.25
+    min_points: 58
+...
