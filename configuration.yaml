@@ -1,11 +1,13 @@
 # Configuration file to process an indoor space
 ---
   input_points: data.txt 
-  rowskip: 51000000
+  rowskip: 0
+  rowskip_data_path: skiprow_data.txt
   log: True # helps identifying the rowskip  
   stepsize: 1000000
   time_start: 1665316938.5186303
   time_end: 1665316972.0186303
+  time_initial: 1665316242.544179
   visualize: True
   writeout: True
   out_file_name: output.pcd

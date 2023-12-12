@@ -15,7 +15,7 @@ def read_configuration(configuration_file):
         except yaml.YAMLError as exc:
             print(exc)
 
-def calculate_time_diff(time1,time2):
+def abs_time_diff(time1,time2):
     return abs(time1-time2)
 
 def find_time(conf, **kwargs):
@@ -28,7 +28,7 @@ def find_time(conf, **kwargs):
     counter = 0
 
     data = pd.read_csv(rowskip_data_path,dtype=float)
-    time_diff = calculate_time_diff(initial_time,time_start)
+    time_diff = abs_time_diff(initial_time,time_start)
     
     cumilative_time = 0
     
@@ -36,8 +36,10 @@ def find_time(conf, **kwargs):
 
         if cumilative_time < time_diff:
             cumilative_time += data['time_difference(sec)'][index]
+            print(cumilative_time)
         elif cumilative_time > time_diff:
-            conf["rowskip"] = index * stepsize
+            conf["rowskip"] = (index-1) * stepsize
+            print(index)
             break
     
     if('enter' in kwargs):
@@ -59,12 +61,12 @@ def find_time(conf, **kwargs):
         # Column names may change - check the corresponding csv file
         point_cloud_data.columns = ['X','Y','Z','R','G','B','Time','Intensity']
         
-        if(point_cloud_data['Time'][0] > search_time):
-            # our rowskip is higher than its real value
-            print("Provide a smaller rowskip value")
-            rowskip = -1 
-            time = -1
-            return (rowskip, time)
+        # if(point_cloud_data['Time'][0] > search_time):
+        #     # our rowskip is higher than its real value
+        #     print("Provide a smaller rowskip value")
+        #     rowskip = -1 
+        #     time = -1
+        #     return (rowskip, time)
 
         unique_list = np.unique(point_cloud_data['Time'])
     
