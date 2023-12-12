@@ -15,10 +15,30 @@ def read_configuration(configuration_file):
         except yaml.YAMLError as exc:
             print(exc)
 
+def calculate_time_diff(time1,time2):
+    return abs(time1-time2)
 
 def find_time(conf, **kwargs):
+
+    initial_time = conf["time_initial"]
+    time_start= conf["time_start"]
+    rowskip_data_path = conf["rowskip_data_path"]
+    stepsize = conf["stepsize"]
     is_completed = False
     counter = 0
+
+    data = pd.read_csv(rowskip_data_path,dtype=float)
+    time_diff = calculate_time_diff(initial_time,time_start)
+    
+    cumilative_time = 0
+    
+    for index in range(len(data['time_difference(sec)'])):
+
+        if cumilative_time < time_diff:
+            cumilative_time += data['time_difference(sec)'][index]
+        elif cumilative_time > time_diff:
+            conf["rowskip"] = index * stepsize
+            break
     
     if('enter' in kwargs):
         rowskip = kwargs['enter'] # if we are processing the exit
@@ -26,7 +46,6 @@ def find_time(conf, **kwargs):
     else:
         rowskip = conf["rowskip"]
         search_time = conf["time_start"]
-
 
     while is_completed == False:
         if (conf["log"]):
@@ -202,3 +221,6 @@ def calculate_area(point_cloud):
     y_diff = abs(np.amax(np.asarray(point_cloud.points),0)[1] - np.amin(np.asarray(point_cloud.points),0)[1])
 
     print(f'Calculated area: {x_diff*y_diff}')
+
+
+
