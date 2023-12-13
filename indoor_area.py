@@ -5,6 +5,7 @@ from collections import Counter
 import matplotlib.pyplot as plt
 import yaml
 import os
+import csv
 
 def read_configuration(configuration_file):
     # Configuration is provided as a yaml file
@@ -18,6 +19,34 @@ def read_configuration(configuration_file):
 def abs_time_diff(time1,time2):
     return abs(time1-time2)
 
+def create_skiprow_data(conf):
+    skiprow_data = []
+    skiprows=0
+
+    data_path = conf['input_points']
+    no_of_rows = conf['stepsize']
+    skiprow_data_path = conf['rowskip_data_path']
+
+    if os.path.exists(skiprow_data_path):
+        pass
+    else:
+        try:
+            while True:
+
+                data = pd.read_csv(data_path,skiprows=skiprows,nrows=no_of_rows,delimiter=' ',header=1)
+                time_init = data.iloc[0][6]
+                time_final = data.iloc[-1][6]
+                skiprow_data.append((time_final-time_init,skiprows))
+                print(f'creating rowskip data for {skiprows}-{skiprows + no_of_rows}')
+                skiprows += no_of_rows
+
+        except IndexError: 
+            pass
+
+        df = pd.DataFrame(skiprow_data)
+        df.columns = ['time_difference(sec)','data_interval']
+        df.to_csv("skiprow_data_1.txt",index= False)
+
 def find_time(conf, **kwargs):
 
     initial_time = conf["time_initial"]
@@ -26,6 +55,8 @@ def find_time(conf, **kwargs):
     stepsize = conf["stepsize"]
     is_completed = False
     counter = 0
+
+    create_skiprow_data(conf)
 
     data = pd.read_csv(rowskip_data_path,dtype=float)
     time_diff = abs_time_diff(initial_time,time_start)
@@ -187,6 +218,9 @@ def run_dbscan(conf,point_cloud):
 
 def draw_histogram(point_cloud):
 
+    filename_x = 'x_hist'
+    filename_y = 'y_hist'
+
     x_data = np.asarray(point_cloud.points)[:,0]    
     fig, ax = plt.subplots()
     n, bins, patches = ax.hist(x_data, 1000)
@@ -207,6 +241,9 @@ def draw_histogram(point_cloud):
     print('figure saved')
     plt.show()
 
+    np.savetxt(filename_x,x_data)
+    np.savetxt(filename_y,y_data)
+
     z_data = np.asarray(point_cloud.points)[:,2]    
     fig, ax = plt.subplots()
     n, bins, patches = ax.hist(z_data, 1000)
@@ -221,8 +258,14 @@ def calculate_area(point_cloud):
 
     x_diff = abs(np.amax(np.asarray(point_cloud.points),0)[0] - np.amin(np.asarray(point_cloud.points),0)[0])
     y_diff = abs(np.amax(np.asarray(point_cloud.points),0)[1] - np.amin(np.asarray(point_cloud.points),0)[1])
+    print(f'xdif1 {(np.amax(np.asarray(point_cloud.points),0)[0])}')
+    print(f'xdif2 {np.amin(np.asarray(point_cloud.points),0)[0]}')
+
+    print(f'ydif1 {(np.amax(np.asarray(point_cloud.points),0)[1])}')
+    print(f'ydif2 {np.amin(np.asarray(point_cloud.points),0)[1]}')
 
     print(f'Calculated area: {x_diff*y_diff}')
 
 
 
+4 
