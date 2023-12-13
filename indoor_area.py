@@ -45,7 +45,7 @@ def create_skiprow_data(conf):
 
         df = pd.DataFrame(skiprow_data)
         df.columns = ['time_difference(sec)','data_interval']
-        df.to_csv("skiprow_data_1.txt",index= False)
+        df.to_csv(skiprow_data_path,index= False)
 
 def find_time(conf, **kwargs):
 
@@ -67,7 +67,7 @@ def find_time(conf, **kwargs):
 
         if cumilative_time < time_diff:
             cumilative_time += data['time_difference(sec)'][index]
-            print(cumilative_time)
+            #print(cumilative_time)
         elif cumilative_time > time_diff:
             conf["rowskip"] = (index-1) * stepsize
             print(index)
@@ -230,6 +230,23 @@ def draw_histogram(point_cloud):
     plt.savefig('X values.png')
     print('figure saved')
     plt.show()
+    np.savetxt(filename_x,x_data)
+
+    print('choose the first x value')
+    x_input1 = float(input())
+    print('choose the second x value')
+    x_input2 = float(input())
+
+    x_data = pd.read_csv('x_hist',header=None)
+    fig, ax = plt.subplots()
+    ax.axvline(x=x_input1, color='r', linestyle='--')
+    ax.axvline(x=x_input2, color='r', linestyle='--')
+    n, bins, patches = ax.hist(x_data, 1000)
+    ax.set_xlabel('X value')
+    ax.set_ylabel('Number of occurrence')
+    ax.set_title('Histogram of x values')
+    plt.show()
+    
     
     y_data = np.asarray(point_cloud.points)[:,1]    
     fig, ax = plt.subplots()
@@ -240,9 +257,25 @@ def draw_histogram(point_cloud):
     plt.savefig('Y values.png')
     print('figure saved')
     plt.show()
-
-    np.savetxt(filename_x,x_data)
     np.savetxt(filename_y,y_data)
+    
+    print('choose the first y value')
+    y_input1 = float(input())
+    print('choose the second y value')
+    y_input2 = float(input())
+
+    y_data = pd.read_csv('y_hist',header=None)
+    fig, ax = plt.subplots()
+    ax.axvline(x=y_input1, color='r', linestyle='--')
+    ax.axvline(x=y_input2, color='r', linestyle='--')
+    n, bins, patches = ax.hist(y_data, 1000)
+    ax.set_xlabel('Y value')
+    ax.set_ylabel('Number of occurrence')
+    ax.set_title('Histogram of x values')
+    plt.show()
+
+    print(f'graph calculated area: {abs(y_input2-y_input1)*abs(x_input2-x_input1)}')
+    
 
     z_data = np.asarray(point_cloud.points)[:,2]    
     fig, ax = plt.subplots()

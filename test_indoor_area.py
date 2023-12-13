@@ -12,7 +12,8 @@ if(rowskip_enter != -1):
     print(f'rowskip exit: {rowskip_exit}, time exit: {time_exit}') 
     
     pcd = visualise_pcd(conf, 
-                        rowskip_enter, 
+           
+                                     rowskip_enter, 
                         rowskip_exit, 
                         time_enter, 
                         time_exit)
