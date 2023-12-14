@@ -32,7 +32,6 @@ def create_skiprow_data(conf):
     else:
         try:
             while True:
-
                 data = pd.read_csv(data_path,skiprows=skiprows,nrows=no_of_rows,delimiter=' ',header=1)
                 time_init = data.iloc[0][6]
                 time_final = data.iloc[-1][6]
@@ -67,10 +66,10 @@ def find_time(conf, **kwargs):
 
         if cumilative_time < time_diff:
             cumilative_time += data['time_difference(sec)'][index]
-            #print(cumilative_time)
+
         elif cumilative_time > time_diff:
             conf["rowskip"] = (index-1) * stepsize
-            print(index)
+
             break
     
     if('enter' in kwargs):
@@ -82,7 +81,7 @@ def find_time(conf, **kwargs):
 
     while is_completed == False:
         if (conf["log"]):
-            print("Processing rows in Laz (~csv) file: ", str(rowskip + (counter*conf["stepsize"]) ))
+            print("Processing rows in Laz (~txt) file: ", str(rowskip + (counter*conf["stepsize"]) ))
 
         point_cloud_data = pd.read_csv(conf["input_points"], 
                                        skiprows = rowskip, 
@@ -91,13 +90,6 @@ def find_time(conf, **kwargs):
                                        delimiter=" ")
         # Column names may change - check the corresponding csv file
         point_cloud_data.columns = ['X','Y','Z','R','G','B','Time','Intensity']
-        
-        # if(point_cloud_data['Time'][0] > search_time):
-        #     # our rowskip is higher than its real value
-        #     print("Provide a smaller rowskip value")
-        #     rowskip = -1 
-        #     time = -1
-        #     return (rowskip, time)
 
         unique_list = np.unique(point_cloud_data['Time'])
     
@@ -122,18 +114,21 @@ def interval(conf, skip_start, skip_end, time_start, time_end):
 
     point_cloud_data.columns = ['X','Y','Z','R','G','B','Time','Intensity']
 
+    index_start = 0
+    index_end = 0
+
     for index in range(skip_end - skip_start + conf["stepsize"]):
         if point_cloud_data['Time'][index] == time_start:
             
             index_start = index
-            print(f'index start: {index_start}')
             break
 
     for index in range(skip_end - skip_start + conf["stepsize"]):
         if point_cloud_data['Time'][index] == time_end:
             
             index_end = index
-            print(f'index_end: {index_end}')
+            print(f'no total proccessed points: {index_end - index_start}')
+            conf['no_of_points'] = index_end - index_start
             break
     return index_start, index_end
 
@@ -186,12 +181,11 @@ def run_dbscan(conf,point_cloud):
     downpcd = point_cloud.voxel_down_sample(voxel_size=voxel_size)
 
     with o3d.utility.VerbosityContextManager(
-            o3d.utility.VerbosityLevel.Debug) as cm:
+            o3d.utility.VerbosityLevel.Error) as cm:
         labels = np.array(downpcd.cluster_dbscan(eps=eps, min_points=min_points, print_progress=True))
         print(labels)
     label_counts = Counter(labels)
     most_common_label = label_counts.most_common(1)[0][0]
-    print(f"The most repeated label is: {most_common_label}")
 
     max_label = labels.max()
     print(f"point cloud has {max_label + 1} clusters")
@@ -212,11 +206,17 @@ def run_dbscan(conf,point_cloud):
 
     pcd_cleaned = o3d.geometry.PointCloud()
     pcd_cleaned.points = o3d.utility.Vector3dVector(numpy_array)
+
+    print(f'no of all points: {conf["no_of_points"]}')
+    print(f'no of cleaned points: {len(np.asarray(pcd_cleaned.points))}')
+    print(f'ratio of cleaned/all : { conf["no_of_points"] / len(np.asarray(pcd_cleaned.points))}')
     o3d.visualization.draw_geometries([pcd_cleaned])
     
     return pcd_cleaned
 
-def draw_histogram(point_cloud):
+def draw_histogram(conf,point_cloud):
+
+    manual_adj = conf['manual_adjustment']
 
     filename_x = 'x_hist'
     filename_y = 'y_hist'
@@ -232,21 +232,22 @@ def draw_histogram(point_cloud):
     plt.show()
     np.savetxt(filename_x,x_data)
 
-    print('choose the first x value')
-    x_input1 = float(input())
-    print('choose the second x value')
-    x_input2 = float(input())
+    if manual_adj:
 
-    x_data = pd.read_csv('x_hist',header=None)
-    fig, ax = plt.subplots()
-    ax.axvline(x=x_input1, color='r', linestyle='--')
-    ax.axvline(x=x_input2, color='r', linestyle='--')
-    n, bins, patches = ax.hist(x_data, 1000)
-    ax.set_xlabel('X value')
-    ax.set_ylabel('Number of occurrence')
-    ax.set_title('Histogram of x values')
-    plt.show()
-    
+        print('choose the first x value')
+        x_input1 = float(input())
+        print('choose the second x value')
+        x_input2 = float(input())
+
+        x_data = pd.read_csv('x_hist',header=None)
+        fig, ax = plt.subplots()
+        ax.axvline(x=x_input1, color='r', linestyle='--')
+        ax.axvline(x=x_input2, color='r', linestyle='--')
+        n, bins, patches = ax.hist(x_data, 1000)
+        ax.set_xlabel('X value')
+        ax.set_ylabel('Number of occurrence')
+        ax.set_title('Histogram of x values')
+        plt.show()
     
     y_data = np.asarray(point_cloud.points)[:,1]    
     fig, ax = plt.subplots()
@@ -259,24 +260,25 @@ def draw_histogram(point_cloud):
     plt.show()
     np.savetxt(filename_y,y_data)
     
-    print('choose the first y value')
-    y_input1 = float(input())
-    print('choose the second y value')
-    y_input2 = float(input())
+    if manual_adj:
 
-    y_data = pd.read_csv('y_hist',header=None)
-    fig, ax = plt.subplots()
-    ax.axvline(x=y_input1, color='r', linestyle='--')
-    ax.axvline(x=y_input2, color='r', linestyle='--')
-    n, bins, patches = ax.hist(y_data, 1000)
-    ax.set_xlabel('Y value')
-    ax.set_ylabel('Number of occurrence')
-    ax.set_title('Histogram of x values')
-    plt.show()
+        print('choose the first y value')
+        y_input1 = float(input())
+        print('choose the second y value')
+        y_input2 = float(input())
 
-    print(f'graph calculated area: {abs(y_input2-y_input1)*abs(x_input2-x_input1)}')
+        y_data = pd.read_csv('y_hist',header=None)
+        fig, ax = plt.subplots()
+        ax.axvline(x=y_input1, color='r', linestyle='--')
+        ax.axvline(x=y_input2, color='r', linestyle='--')
+        n, bins, patches = ax.hist(y_data, 1000)
+        ax.set_xlabel('Y value')
+        ax.set_ylabel('Number of occurrence')
+        ax.set_title('Histogram of x values')
+        plt.show()
+
+        print(f'graph calculated area: {abs(y_input2-y_input1)*abs(x_input2-x_input1)}')
     
-
     z_data = np.asarray(point_cloud.points)[:,2]    
     fig, ax = plt.subplots()
     n, bins, patches = ax.hist(z_data, 1000)
@@ -291,14 +293,5 @@ def calculate_area(point_cloud):
 
     x_diff = abs(np.amax(np.asarray(point_cloud.points),0)[0] - np.amin(np.asarray(point_cloud.points),0)[0])
     y_diff = abs(np.amax(np.asarray(point_cloud.points),0)[1] - np.amin(np.asarray(point_cloud.points),0)[1])
-    print(f'xdif1 {(np.amax(np.asarray(point_cloud.points),0)[0])}')
-    print(f'xdif2 {np.amin(np.asarray(point_cloud.points),0)[0]}')
-
-    print(f'ydif1 {(np.amax(np.asarray(point_cloud.points),0)[1])}')
-    print(f'ydif2 {np.amin(np.asarray(point_cloud.points),0)[1]}')
 
     print(f'Calculated area: {x_diff*y_diff}')
-
-
-
-4 

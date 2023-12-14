@@ -1,17 +1,23 @@
 # Configuration file to process an indoor space
 ---
-  input_points: data.txt 
-  rowskip: 0
-  rowskip_data_path: skiprow_data.txt
-  log: True # helps identifying the rowskip  
-  stepsize: 1000000
-  time_start: 1665316938.5186303
-  time_end: 1665316942.5186303
-  time_initial: 1665316242.544179
-  visualize: True
-  writeout: True
-  out_file_name: output.pcd
-  dbscan:
+  input_points: ../Dataset/data.txt
+  rowskip_data_path: ../Dataset/skiprow_data.txt
+  out_file_name: ../Dataset/output.pcd
+
+  time_initial: 1665316242.544179 # initial GpsTime reading
+  stepsize: 1000000 # number of data to process in each loop
+  
+  time_start: 1665316938.5186303 # beginning of the desired time
+  time_end: 1665316942.5186303 # end of the desired time
+  
+  rowskip: 0 # being overwritten in the process
+  no_of_points: 0 # being overwritten in the process
+  visualize: True # visualizes the point cloud output
+  writeout: True # saves the final point cloud as .pcd
+  log: True # helps identifying the rowskip
+  manual_adjustment: False # if true enables manual input
+
+  dbscan: # dbscan related parameters
     down_sample_ratio: 0.05
     eps: 0.25
     min_points: 58
