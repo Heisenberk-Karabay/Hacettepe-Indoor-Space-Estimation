@@ -127,7 +127,6 @@ def interval(conf, skip_start, skip_end, time_start, time_end):
         if point_cloud_data['Time'][index] == time_end:
             
             index_end = index
-            print(f'no total proccessed points: {index_end - index_start}')
             conf['no_of_points'] = index_end - index_start
             break
     return index_start, index_end
@@ -177,13 +176,13 @@ def run_dbscan(conf,point_cloud):
     voxel_size = conf['dbscan']['down_sample_ratio']
     eps = conf['dbscan']['eps']
     min_points = conf['dbscan']['min_points']
+    writeout = conf['writeout']
 
     downpcd = point_cloud.voxel_down_sample(voxel_size=voxel_size)
-
+    
     with o3d.utility.VerbosityContextManager(
             o3d.utility.VerbosityLevel.Error) as cm:
         labels = np.array(downpcd.cluster_dbscan(eps=eps, min_points=min_points, print_progress=True))
-        print(labels)
     label_counts = Counter(labels)
     most_common_label = label_counts.most_common(1)[0][0]
 
@@ -209,9 +208,13 @@ def run_dbscan(conf,point_cloud):
 
     print(f'no of all points: {conf["no_of_points"]}')
     print(f'no of cleaned points: {len(np.asarray(pcd_cleaned.points))}')
-    print(f'ratio of cleaned/all : { conf["no_of_points"] / len(np.asarray(pcd_cleaned.points))}')
+    print(f'ratio of all/cleaned : { conf["no_of_points"] / len(np.asarray(pcd_cleaned.points))}')
     o3d.visualization.draw_geometries([pcd_cleaned])
     
+    if writeout:
+        o3d.io.write_point_cloud('cleaned.pcd',pcd_cleaned)
+        print('point cloud saved')
+
     return pcd_cleaned
 
 def draw_histogram(conf,point_cloud):
@@ -234,9 +237,9 @@ def draw_histogram(conf,point_cloud):
 
     if manual_adj:
 
-        print('choose the first x value')
+        print('Min x value:')
         x_input1 = float(input())
-        print('choose the second x value')
+        print('Max x value:')
         x_input2 = float(input())
 
         x_data = pd.read_csv('x_hist',header=None)
@@ -262,9 +265,9 @@ def draw_histogram(conf,point_cloud):
     
     if manual_adj:
 
-        print('choose the first y value')
+        print('Min y value')
         y_input1 = float(input())
-        print('choose the second y value')
+        print('Max y value')
         y_input2 = float(input())
 
         y_data = pd.read_csv('y_hist',header=None)
@@ -277,7 +280,7 @@ def draw_histogram(conf,point_cloud):
         ax.set_title('Histogram of x values')
         plt.show()
 
-        print(f'graph calculated area: {abs(y_input2-y_input1)*abs(x_input2-x_input1)}')
+        print(f'manual calculated area: {abs(y_input2-y_input1)*abs(x_input2-x_input1)}')
     
     z_data = np.asarray(point_cloud.points)[:,2]    
     fig, ax = plt.subplots()
