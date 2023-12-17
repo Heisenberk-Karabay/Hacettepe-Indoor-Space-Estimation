@@ -206,9 +206,11 @@ def run_dbscan(conf,point_cloud):
     pcd_cleaned = o3d.geometry.PointCloud()
     pcd_cleaned.points = o3d.utility.Vector3dVector(numpy_array)
 
-    print(f'no of all points: {conf["no_of_points"]}')
-    print(f'no of cleaned points: {len(np.asarray(pcd_cleaned.points))}')
-    print(f'ratio of all/cleaned : { conf["no_of_points"] / len(np.asarray(pcd_cleaned.points))}')
+    print(f'no of proccessed points: {conf["no_of_points"]}')
+    print(f'no of downsampled points: {len(np.asarray(downpcd.points))}' )
+    print(f'no of downsampled cleaned points: {len(np.asarray(pcd_cleaned.points))}')
+    print(f'ratio of cleaned/all : {(len(np.asarray(pcd_cleaned.points))) / (len(np.asarray(downpcd.points)))}')
+    
     o3d.visualization.draw_geometries([pcd_cleaned])
     
     if writeout:
